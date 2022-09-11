@@ -6,26 +6,26 @@ library(dplyr)
 
 #This Script will calculate de Present Value Amount of Pensions Obligations based on IFRS 19
 #It is required to have a database with the following structure: id, date of birth, pension amount, pension motive, gender, type of pension (annuity, temporary)
-#It is required to structure life tables based only in mortality risk
+#It is required to structure life tables based in mortality risk only
 
 #life table
-tables = read_excel("C:/Users/cevas/OneDrive/Desktop/Scripts/Tables.xlsx")
+tables = read_excel("C:/Users/youruser/yourtables.xlsx")
 tables$age1 <- seq.int(nrow(tables))-1
 
 #active pension table
-pensionados <- read_excel("C:/Users/cevas/OneDrive/Desktop/Scripts/Pensionados.xlsx")
+pensionados <- read_excel("C:/Users/youruser/youractivebeneficiariestable.xlsx")
 pensionados['age'] <- as.integer((valuation_date - as.Date(pensionados$FECHA_NACIMIENTO))/365.25)
 
 #Define demographic, financial and actuarial assumptions:
-valuation_date = as.Date('2022-12-31')
-pension_amount_increase <- 0.00243183834936293
+valuation_date = as.Date('2020-12-31')
+pension_amount_increase <- 0.002
 annual_pension_frecuency <- 13
-discount_rate <- 0.071809486
-n_discount_rate <- (((discount_rate+1)^(1/12))-1)*12
+discount_rate <- 0.071
+n_discount_rate <- (((discount_rate+1)^(1/12))-1)*12 #nominal discount rate
 mortality_table = 'SIPEN'
 inicio_lx = 100000
 
-#puc
+#Projected Unit Credit
 pv_df <- data.frame()
 
 for (c in 1:nrow(pensionados)) {
@@ -68,11 +68,9 @@ df7 = cbind(df6
 
 df8 = cbind(id = c, pv = sum(df7$pv))
 
-pv_df = rbind(pv_df, df8)
+pv_df = rbind(pv_df, df8) #Final table with PV per user
 
 }
 
-
-write.csv(df, "C:/Users/cevas/OneDrive/Desktop/Scripts/resultados_pensionados.xlsx")
 
 
