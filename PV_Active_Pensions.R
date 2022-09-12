@@ -9,29 +9,29 @@ library(dplyr)
 #It is required to structure life tables based in mortality risk only
 
 #life table
-tables = read_excel("C:/Users/youruser/yourtables.xlsx")
+tables = "your tables"
 tables$age1 <- seq.int(nrow(tables))-1
 
 #active pension table
-pensionados <- read_excel("C:/Users/youruser/youractivebeneficiariestable.xlsx")
-pensionados['age'] <- as.integer((valuation_date - as.Date(pensionados$FECHA_NACIMIENTO))/365.25)
+retired <- "your table"
+retired['age'] <- as.integer((valuation_date - as.Date(retired$birthdate))/365.25)
 
 #Define demographic, financial and actuarial assumptions:
 valuation_date = as.Date('2020-12-31')
 pension_amount_increase <- 0.002
-annual_pension_frecuency <- 13
-discount_rate <- 0.071
+annual_pension_frecuency <- 12
+discount_rate <- 0.09
 n_discount_rate <- (((discount_rate+1)^(1/12))-1)*12 #nominal discount rate
-mortality_table = 'SIPEN'
+mortality_table = 'table'
 inicio_lx = 100000
 
 #Projected Unit Credit
 pv_df <- data.frame()
 
-for (c in 1:nrow(pensionados)) {
+for (c in 1:nrow(retired)) {
 
-df1 <- subset(pensionados, NUM == c)
-mortality = gsub(" ","",paste('qx_',df1$GENERO,"_",mortality_table), fixed = TRUE)
+df1 <- subset(retired, NUM == c)
+mortality = gsub(" ","",paste('qx_',df1$gender,"_",mortality_table), fixed = TRUE)
 single_table <- tables %>% select(age1, paste0(mortality))
 df2 <- rbind(df1, df1[rep(1, 120), ])
 df2$NUM <- seq.int(nrow(df2))
@@ -39,7 +39,7 @@ df3 = cbind(df2
             ,age1 = df2$age + df2$NUM -1
             ,year_count = df2$NUM-1
             ,pension_increment = (1+pension_amount_increase)^((df2$NUM)-1)
-            ,pension_amount = (df2$MONTO_PENSION * annual_pension_frecuency) * (1+pension_amount_increase)^((df2$NUM)-1)
+            ,pension_amount = (df2$amount * annual_pension_frecuency) * (1+pension_amount_increase)^((df2$NUM)-1)
             )
 
 df4 = df3[df3$age1 <= 120,]
